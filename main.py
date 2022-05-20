@@ -228,5 +228,3 @@ result_label.place(x=610, y=250)
 window.bind('<Key>', key_pressed)
 
 window.mainloop()
-
-# fix checking apostrophes and quotes (text is directional, typing is not)
