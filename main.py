@@ -14,7 +14,6 @@ YELLOW = '#FAF0D7'
 DARK_YELLOW = '#EFE6CF'
 BLUE = '#8CC0DE'
 DARK_BLUE = '#75A9C8'
-TEST_TEXT = ('Mr. Bennet was so odd a mixture of quick parts, sarcastic humour, reserve, and caprice, that the experience of three-and-twenty years had been insufficient to make his wife understand his character. Her mind was less difficult to develop. She was a woman of mean understanding, little information, and uncertain temper. When she was discontented, she fancied herself nervous. The business of her life was to get her daughters married; its solace was visiting and news.')
 
 
 def get_book():
@@ -30,24 +29,26 @@ def get_test_words():
     while continue_searching:
         book_text = get_book()
         clean_text = book_text[3000:-22000]
-        tries = 0
         for index in range(len(clean_text)):
             if clean_text[index].isupper() and clean_text[index + 1].islower():
                 final_text = clean_text[index: index + 2000]
-                tries += 1
-                if ' a ' in final_text and 'the' in final_text and '�' not in final_text:
-                    final_text = final_text.replace('\r\n\r\n', '\n')
-                    final_text = final_text.replace('\r\n', ' ')
+                # check if seems to have simple Enlgish words
+                if ' a ' in final_text and 'the' in final_text:
+                    # check for no a few special characters that would be hard to type on Enlgish keyboards
+                    if 'é' not in final_text and '�' not in final_text and 'ö' not in final_text:
+                        # replace characters to make scoring easier and text more readable
+                        for item in [['\r\n\r\n', '\n'], ['\r\n', ' '], ['”', '"'], ['“', '"'], ['’', "'"]]:
+                            final_text = final_text.replace(item[0], item[1])
 
-                    test_words.config(state='normal')
-                    test_words.delete(1.0, tk.END)
-                    test_words.insert(1.0, final_text)
-                    test_words.config(state='disabled')
+                        test_words.config(state='normal')
+                        test_words.delete(1.0, tk.END)
+                        test_words.insert(1.0, final_text)
+                        test_words.config(state='disabled')
 
-                    text = final_text
+                        text = final_text
 
-                    continue_searching = False
-                    break
+                        continue_searching = False
+                        break
 
 
 def get_text():
@@ -75,6 +76,8 @@ def button_pressed():
         typing_area.focus()
         button.config(text='Stop')
         countdown(60)
+        test_words.see(1.0)
+        new_text_button.config(state='disabled')
     elif button.cget('text') == 'Stop':
         button.config(text='Start')
         window.after_cancel(timer)
@@ -83,6 +86,7 @@ def button_pressed():
         focus_out()
 
         typing_area.config(state='disabled')
+        new_text_button.config(state='normal')
 
 
 def key_pressed(event):
@@ -129,6 +133,7 @@ def countdown(count):
     else:
         typing_area.config(fg='dark grey')
         typing_area.config(state='disabled')
+        new_text_button.config(state='normal')
         button.config(text='Restart')
         score_wpm()
 
@@ -223,3 +228,5 @@ result_label.place(x=610, y=250)
 window.bind('<Key>', key_pressed)
 
 window.mainloop()
+
+# fix checking apostrophes and quotes (text is directional, typing is not)
